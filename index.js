@@ -1,7 +1,7 @@
 const {Telegraf} = require('telegraf');
 const mongoose = require('mongoose');
 const Member = require('./Schmas//memberSchma');
-const Event = require('./Schmas/eventSchma');
+const Event = require('./Schmas//eventShema');
 
 const bot = new Telegraf('6746282011:AAF-MOoNuBALmS3aMQGq4DAkz6HeUehpexQ');
 mongoose.connect("mongodb://localhost:27017/Database", { useNewUrlParser: true, useUnifiedTopology: true });
@@ -80,8 +80,36 @@ bot.action('addMemeber',(ctx)=>{
       })
 });
 
-bot.action('deleteMember',(ctx)=>{
-ctx.reply('the bot is deleting members')
+bot.action('deleteMember',async(ctx)=>{
+try {
+    const members = await Member.find();
+    members.forEach((member) => {
+      ctx.reply(`name: ${member.name}\nemail: ${member.email}\nphone: ${member.phone}`)           
+    });
+  } catch (error) {
+    console.log({ message: error.message });
+  }
+
+  ctx.reply('Please Enter The Phone of The Person You Want To Delete From The Above: ')
+  bot.on('text',async(ctx) =>{
+    idPhone = ctx.message.text;
+    try {
+        const result = await Member.findOneAndDelete({ phone: idPhone });
+    
+        if (result) {
+          console.log({ message: 'Member deleted successfully' });
+          ctx.reply('Member deleted successfully');
+        } else {
+          console.log({ message: 'Member not found' });
+          ctx.reply('Member not found');
+        }
+      } catch (error) {
+        console.error({ message: 'Error deleting member:'});
+        ctx.reply('An error occurred while deleting the member.');
+      }   
+
+  })
+
 });
 
 
@@ -101,7 +129,7 @@ bot.action('manageEvent',(ctx)=>{
 });
 
 bot.action('addEvent',async(ctx)=>{
-    ctx.reply('Please Enter Events in Format of Topic,Detail,ID')
+    ctx.reply('Please Enter events in format of topic,detail,ID')
     bot.on('text', async(ctx) => {       
         eventInput = ctx.message.text;
         const [newTopic,newDetail,newID] = eventInput.split(',');
@@ -123,7 +151,7 @@ bot.action('ViewReport',async (ctx)=>{
     try {
         const members = await Member.find();
         members.forEach((member) => {
-          ctx.reply(`name:  ${member.name}\nemail:  ${member.email}\nphone:  ${member.phone}`)           
+          ctx.reply(`name: ${member.name}\nemail: ${member.email}\nphone: ${member.phone}`)           
         });
       } catch (error) {
         console.log({ message: error.message });
