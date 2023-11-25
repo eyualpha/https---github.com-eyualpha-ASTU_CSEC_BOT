@@ -1,7 +1,7 @@
 const {Telegraf} = require('telegraf');
 const mongoose = require('mongoose');
 const Member = require('./Schmas//memberSchma');
-const Event = require('./Schmas//eventShema');
+const Event = require('./Schmas/eventSchma');
 
 const bot = new Telegraf('6746282011:AAF-MOoNuBALmS3aMQGq4DAkz6HeUehpexQ');
 mongoose.connect("mongodb://localhost:27017/Database", { useNewUrlParser: true, useUnifiedTopology: true });
