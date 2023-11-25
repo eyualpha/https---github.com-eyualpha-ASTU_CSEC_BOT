@@ -1,12 +1,15 @@
 const {Telegraf} = require('telegraf');
+const mongoose = require('mongoose');
+const Member = require('./Schmas//memberSchma');
 
 const bot = new Telegraf('6746282011:AAF-MOoNuBALmS3aMQGq4DAkz6HeUehpexQ');
+mongoose.connect("mongodb://localhost:27017/Database", { useNewUrlParser: true, useUnifiedTopology: true });
 
 ////////////////////////////////////////////start of the bot
 function startBot(ctx){
     ctx.telegram.sendMessage(
         ctx.chat.id,
-        `✨✨Welcome To ASTU_CSEC_Bot✨✨\n\n 👨‍💻 Please Login As:`,
+        `✨✨Welcome To CSEC_ASTU_Bot✨✨\n\n 👨‍💻 Please Login As:`,
     {
         reply_markup: {  inline_keyboard:[
                 [{text:'Member',callback_data:'member'}],
@@ -14,7 +17,6 @@ function startBot(ctx){
             ]
         }
     })
-
 }
 bot.start((ctx)=>{
     startBot(ctx);
@@ -24,7 +26,7 @@ bot.action('backToStart',(ctx)=>{
     startBot(ctx);
 })
 //////////////////////////////////////////start of adminstrator role
-function startAdminstrator(ctx){
+const startAdminstrator = (ctx)=>{
     ctx.telegram.sendMessage(
         ctx.chat.id,
         '🤖 What You Want To Do?',
@@ -59,13 +61,28 @@ bot.action('manageMemeber',(ctx)=>{
     })
 });
 
+const  addUser = async(NAME, EMAIL, PHONE, PASSWORD)=> {
+    try{
+        const user = await Member.create({name:NAME, email:EMAIL, phone:PHONE, password:PASSWORD});
+        console.log(user)
+        }catch{
+            console.log('error')
+        }
+    };
 bot.action('addMemeber',(ctx)=>{
-ctx.reply('the bot is adding members')
+    ctx.reply('please enter new member details in format of name,email,phone,password:');
+    bot.on('text', (ctx) => {       
+        userInput = ctx.message.text; 
+        const [newUserName, newUserEmail, newUserPhone, newUserPassword] = userInput.split(',');
+        addUser(newUserName, newUserEmail, newUserPhone,newUserPassword);
+        ctx.reply(`${newUserName} added successfuly`);
+      })
 });
 
 bot.action('deleteMember',(ctx)=>{
 ctx.reply('the bot is deleting members')
 });
+
 
 bot.action('manageEvent',(ctx)=>{
     ctx.deleteMessage();
@@ -83,7 +100,11 @@ bot.action('manageEvent',(ctx)=>{
 });
 
 bot.action('addEvent',(ctx)=>{
-    ctx.reply('the bot is adding events')
+    ctx.reply('Enter events:')
+    bot.on('text', (ctx) => {       
+        userInput = ctx.message.text;            
+        ctx.reply(`Received: ${userInput}`);
+      })
     });
     
 bot.action('deleteEvent',(ctx)=>{
@@ -92,11 +113,12 @@ bot.action('deleteEvent',(ctx)=>{
 
 bot.action('ViewReport',(ctx)=>{
 ctx.reply('the bot is loading reports')
+S.getAll()
 });
 ////////////////////////////////////////////end of adminstrator role
 ////////////////////////////////////////////start of members role
 
-function startMember(ctx){
+const startMember = (ctx)=>{
     ctx.telegram.sendMessage(
         ctx.chat.id,
         '🤖 What You Want To Do?',
