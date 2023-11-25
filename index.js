@@ -1,6 +1,7 @@
 const {Telegraf} = require('telegraf');
 const mongoose = require('mongoose');
 const Member = require('./Schmas//memberSchma');
+const Event = require('./Schmas//eventShema');
 
 const bot = new Telegraf('6746282011:AAF-MOoNuBALmS3aMQGq4DAkz6HeUehpexQ');
 mongoose.connect("mongodb://localhost:27017/Database", { useNewUrlParser: true, useUnifiedTopology: true });
@@ -64,9 +65,9 @@ bot.action('manageMemeber',(ctx)=>{
 const  addUser = async(NAME, EMAIL, PHONE, PASSWORD)=> {
     try{
         const user = await Member.create({name:NAME, email:EMAIL, phone:PHONE, password:PASSWORD});
-        console.log(user)
+        console.log('member added successfuly!')
         }catch{
-            console.log('error')
+            console.log('error ocurd!')
         }
     };
 bot.action('addMemeber',(ctx)=>{
@@ -99,11 +100,18 @@ bot.action('manageEvent',(ctx)=>{
     })
 });
 
-bot.action('addEvent',(ctx)=>{
-    ctx.reply('Enter events:')
-    bot.on('text', (ctx) => {       
-        userInput = ctx.message.text;            
-        ctx.reply(`Received: ${userInput}`);
+bot.action('addEvent',async(ctx)=>{
+    ctx.reply('Please Enter Events in Format of Topic,Detail,ID')
+    bot.on('text', async(ctx) => {       
+        eventInput = ctx.message.text;
+        const [newTopic,newDetail,newID] = eventInput.split(',');
+        try{
+            const user = await Event.create({topic: newTopic, detail: newDetail, id:newID});
+            console.log('event added successfuly!')
+            }catch{
+                console.log('error ocurd!')
+            }
+        ctx.reply(`event added successfuly!`);
       })
     });
     
@@ -111,9 +119,15 @@ bot.action('deleteEvent',(ctx)=>{
     ctx.reply('the bot is deleting events')
     });
 
-bot.action('ViewReport',(ctx)=>{
-ctx.reply('the bot is loading reports')
-S.getAll()
+bot.action('ViewReport',async (ctx)=>{
+    try {
+        const members = await Member.find();
+        members.forEach((member) => {
+          ctx.reply(`name:  ${member.name}\nemail:  ${member.email}\nphone:  ${member.phone}`)           
+        });
+      } catch (error) {
+        console.log({ message: error.message });
+      }
 });
 ////////////////////////////////////////////end of adminstrator role
 ////////////////////////////////////////////start of members role
