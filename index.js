@@ -77,6 +77,7 @@ bot.action('addMemeber',(ctx)=>{
         const [newUserName, newUserEmail, newUserPhone, newUserPassword] = userInput.split(',');
         addUser(newUserName, newUserEmail, newUserPhone,newUserPassword);
         ctx.reply(`${newUserName} added successfuly`);
+        startAdminstrator(ctx);
       })
 });
 
@@ -109,6 +110,7 @@ try {
       }   
 
   })
+  startAdminstrator(ctx);
 
 });
 
@@ -141,6 +143,7 @@ bot.action('addEvent',async(ctx)=>{
             }
         ctx.reply(`event added successfuly!`);
       })
+      startAdminstrator(ctx);
     });
     
 bot.action('deleteEvent',(ctx)=>{
@@ -148,10 +151,12 @@ bot.action('deleteEvent',(ctx)=>{
     });
 
 bot.action('ViewReport',async (ctx)=>{
+    ctx.reply('Official Members in CSEC_ASTU Are Listed Below:')
     try {
         const members = await Member.find();
         members.forEach((member) => {
-          ctx.reply(`name: ${member.name}\nemail: ${member.email}\nphone: ${member.phone}`)           
+          ctx.reply(`name: ${member.name}\nemail: ${member.email}\nphone: ${member.phone}`)
+                          
         });
       } catch (error) {
         console.log({ message: error.message });
@@ -182,8 +187,16 @@ bot.action('member',(ctx)=>{
 bot.action('updateProfile',(ctx)=>{
 ctx.reply('the bot is updating your profile')
 });
-bot.action('viewEvent',(ctx)=>{
-ctx.reply('the bot is loading events for you')
+bot.action('viewEvent',async(ctx)=>{
+    ctx.reply('Available Events At CSEC_ASTU Are Listed Below:')
+    try {
+        const events = await Event.find();
+        events.forEach((event) => {
+          ctx.reply(`Topic:  ${event.topic}\nDetail:  ${event.detail}\n`)                      
+        });
+      } catch (error) {
+        console.log({ message: error.message });
+      }
 });
 ///////////////////////////////////////////////////end of members role
 
