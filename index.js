@@ -45,7 +45,7 @@ bot.help(async (ctx) => {
 
 bot.action("backToStart", (ctx) => {
   ctx.deleteMessage();
-  startBot(ctx);
+  adminBack(ctx);
 });
 
 //////////////////////////////////////////start of adminstrator role
@@ -137,7 +137,7 @@ bot.action("deleteEvent", async (ctx) => {
     "🤖 Please Enter The Topic of The Event You Want To Delete From The Above: "
   );
 
-  ctx.session ??= { status: "deleteevent" };
+  ctx.session ??= { status: "deletevent" };
 });
 
 bot.action("ViewReport", async (ctx) => {
