@@ -1,6 +1,6 @@
 CSEC ASTU CLUB MANAGEMENT BOT
 
-Welcome to the CSEC ASTU Club Management Bot repository! This bot is designed to simplify the management of your club on Telegram. the bot is developed using the Node.js (Telegraf) and MongoDB for efficient database management. It introduces two main user roles: administrators and members. Administrators have the authority to add or remove members and events, as well as access a report on the current club members. Members, on the other hand, can view the events posted by administrators.
+Welcome to the CSEC ASTU Club Management Bot repository! This bot is designed to simplify the management of your club on Telegram. the bot is developed using the Node.js (Telegraf module ) and MongoDB for efficient database management. It introduces two main user roles: administrators and members. Administrators have the authority to add or remove members and events, as well as access a report on the current club members. Members, on the other hand, can view the events posted by administrators.
 
 #Features
 
