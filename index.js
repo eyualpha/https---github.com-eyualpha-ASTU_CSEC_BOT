@@ -1,203 +1,184 @@
-const {Telegraf} = require('telegraf');
-const mongoose = require('mongoose');
-const Member = require('./Schmas//memberSchma');
-const Event = require('./Schmas//eventSchma');
+const { Telegraf, session } = require("telegraf");
+const mongoose = require("mongoose");
+const Member = require("./Schmas/memberSchma");
+const Event = require("./Schmas/eventSchma");
+const startBot = require("./User/start");
+const getSenderName = require("./User/getSenderName");
+const startAdminstrator = require("./Admin/startAdministrator");
+const startMemberManager = require("./Admin/startMemberManager");
+const startEventManager = require("./Admin/startEventManager");
+const adminBack = require("./Admin/adminBack");
+const addUser = require("./Admin/addUser");
+const startMember = require("./member/startMember");
+const addMember = require("./member/addMember");
+const deleteMember = require("./member/deleteMember");
+const addEvent = require("./member/addEvent");
+const deletEvent = require("./member/deleteEvent");
 
-const bot = new Telegraf('6746282011:AAF-MOoNuBALmS3aMQGq4DAkz6HeUehpexQ');
-mongoose.connect("mongodb://localhost:27017/Database", { useNewUrlParser: true, useUnifiedTopology: true });
+require("dotenv").config();
+
+const bot = new Telegraf(process.env.token);
+mongoose.connect(process.env.mongo_url);
+
+bot.use(session());
 
 ////////////////////////////////////////////start of the bot
-function startBot(ctx){
-    ctx.telegram.sendMessage(
-        ctx.chat.id,
-        `✨✨Welcome To CSEC_ASTU_Bot✨✨\n\n 👨‍💻 Please Login As:`,
-    {
-        reply_markup: {  inline_keyboard:[
-                [{text:'Member',callback_data:'member'}],
-                [{text:'Administrator',callback_data:'administrator'}]               
-            ]
-        }
-    })
-}
-bot.start((ctx)=>{
-    startBot(ctx);
+
+bot.start((ctx) => {
+  getSenderName(ctx);
+  startBot(ctx);
 });
-bot.action('backToStart',(ctx)=>{
-    ctx.deleteMessage();
-    startBot(ctx);
-})
+
+bot.help(async (ctx) => {
+  await ctx.reply(`
+    Help
+    
+    click /start to start the bot
+    click /administrator to log as administrator
+    click /member to log as member
+
+    thanks for using our bot!
+    for more info: https://t.me/CSEC_ASTU
+
+    `);
+});
+
+bot.action("backToStart", (ctx) => {
+  ctx.deleteMessage();
+  startBot(ctx);
+});
+
 //////////////////////////////////////////start of adminstrator role
-const startAdminstrator = (ctx)=>{
-    ctx.telegram.sendMessage(
-        ctx.chat.id,
-        '🤖 What You Want To Do?',
-    {
-        reply_markup: {  inline_keyboard:[
-                [{text:'⚙️ Manage Members',callback_data:'manageMemeber'}],
-                [{text:'🎇 Manage Events',callback_data:'manageEvent'}],
-                [{text:'📈 View Report',callback_data:'ViewReport'}],
-                [{text:'🔳 Log Out',callback_data:'backToStart'}]           
-            ]
-        }
-    })
-
-}
-bot.action('administrator',(ctx)=>{
-    ctx.deleteMessage();
-    startAdminstrator(ctx);   
+//calling to member manager function
+bot.action("managememeber", (ctx) => {
+  console.log("working");
+  ctx.deleteMessage();
+  startMemberManager(ctx);
 });
 
-bot.action('manageMemeber',(ctx)=>{
-    ctx.deleteMessage();
-    ctx.telegram.sendMessage(
-        ctx.chat.id,
-        '🤖 Member Manager',
-    {
-        reply_markup: {  inline_keyboard:[
-                [{text:'➕ Add Members',callback_data:'addMemeber'}],
-                [{text:'❌ Delete Member',callback_data:'deleteMember'}],
-                [{text:'⬅️ Back',callback_data:'administrator'}]          
-            ]
-        }
-    })
+bot.action("administrator", (ctx) => {
+  ctx.deleteMessage();
+  startAdminstrator(ctx);
 });
 
-const  addUser = async(NAME, EMAIL, PHONE, PASSWORD)=> {
-    try{
-        const user = await Member.create({name:NAME, email:EMAIL, phone:PHONE, password:PASSWORD});
-        console.log('member added successfuly!')
-        }catch{
-            console.log('error ocurd!')
-        }
-    };
-bot.action('addMemeber',(ctx)=>{
-    ctx.reply('please enter new member details in format of name,email,phone,password:');
-    bot.on('text', (ctx) => {       
-        userInput = ctx.message.text; 
-        const [newUserName, newUserEmail, newUserPhone, newUserPassword] = userInput.split(',');
-        addUser(newUserName, newUserEmail, newUserPhone,newUserPassword);
-        ctx.reply(`${newUserName} added successfuly`);
-        startAdminstrator(ctx);
-      })
+bot.action("administratorApproved", (ctx) => {
+  ctx.deleteMessage();
+  adminBack(ctx);
 });
 
-bot.action('deleteMember',async(ctx)=>{
-try {
+//calling to add member function
+bot.action("addMember", (ctx) => {
+  ctx.reply(
+    "🤖 Please Enter New Member Details In Format of name,email,phone:"
+  );
+  //   ctx.session.status = "addmember";
+  ctx.session ??= { status: "addmember" };
+  console.log(ctx.session);
+});
+
+bot.on("text", (ctx) => {
+  console.log("heree .....");
+  const session = ctx.session;
+  if (session && session.status === "addmember") {
+    addMember(ctx);
+    startAdminstrator(ctx);
+  } else if (session && session.status === "deletememeber") {
+    deleteMember(ctx);
+  } else if (session && session.status === "addevent") {
+    addEvent(ctx);
+  } else if (session && session.status === "deleteevent") {
+    deletEvent(ctx);
+  }
+});
+
+// a function that delete memebr using phone number
+bot.action("deleteMember", async (ctx) => {
+  try {
     const members = await Member.find();
     members.forEach((member) => {
-      ctx.reply(`name: ${member.name}\nemail: ${member.email}\nphone: ${member.phone}`)           
+      ctx.reply(
+        `name: ${member.name}\nemail: ${member.email}\nphone: ${member.phone}`
+      );
     });
   } catch (error) {
     console.log({ message: error.message });
   }
 
-  ctx.reply('Please Enter The Phone of The Person You Want To Delete From The Above: ')
-  bot.on('text',async(ctx) =>{
-    idPhone = ctx.message.text;
-    try {
-        const result = await Member.findOneAndDelete({ phone: idPhone });
-    
-        if (result) {
-          console.log({ message: 'Member deleted successfully' });
-          ctx.reply('Member deleted successfully');
-        } else {
-          console.log({ message: 'Member not found' });
-          ctx.reply('Member not found');
-        }
-      } catch (error) {
-        console.error({ message: 'Error deleting member:'});
-        ctx.reply('An error occurred while deleting the member.');
-      }   
+  ctx.reply(
+    "🤖 Please Enter The Phone of The Person You Want To Delete From The Above: "
+  );
 
-  })
-  startAdminstrator(ctx);
-
+  ctx.session ??= { status: "deletememeber" };
 });
 
-
-bot.action('manageEvent',(ctx)=>{
-    ctx.deleteMessage();
-    ctx.telegram.sendMessage(
-        ctx.chat.id,
-        '🤖 Event Manager',
-    {
-        reply_markup: {  inline_keyboard:[
-                [{text:'➕ Add Event',callback_data:'addEvent'}],
-                [{text:'❌ Delete Event',callback_data:'deleteEvent'}],
-                [{text:'⬅️ Back',callback_data:'administrator'}]          
-            ]
-        }
-    })
+//calling for event manager function
+bot.action("manageEvent", (ctx) => {
+  ctx.deleteMessage();
+  startEventManager(ctx);
 });
 
-bot.action('addEvent',async(ctx)=>{
-    ctx.reply('Please Enter events in format of topic,detail,ID')
-    bot.on('text', async(ctx) => {       
-        eventInput = ctx.message.text;
-        const [newTopic,newDetail,newID] = eventInput.split(',');
-        try{
-            const user = await Event.create({topic: newTopic, detail: newDetail, id:newID});
-            console.log('event added successfuly!')
-            }catch{
-                console.log('error ocurd!')
-            }
-        ctx.reply(`event added successfuly!`);
-      })
-      startAdminstrator(ctx);
-    });
-    
-bot.action('deleteEvent',(ctx)=>{
-    ctx.reply('the bot is deleting events')
-    });
+bot.action("addEvent", async (ctx) => {
+  ctx.reply("🤖 Please Enter events in format of topic,detail:");
+  ctx.session ??= { status: "addevent" };
+});
 
-bot.action('ViewReport',async (ctx)=>{
-    ctx.reply('Official Members in CSEC_ASTU Are Listed Below:')
-    try {
-        const members = await Member.find();
-        members.forEach((member) => {
-          ctx.reply(`name: ${member.name}\nemail: ${member.email}\nphone: ${member.phone}`)
-                          
-        });
-      } catch (error) {
-        console.log({ message: error.message });
-      }
+bot.action("deleteEvent", async (ctx) => {
+  ctx.reply("the bot is deleting events");
+  try {
+    const events = await Event.find();
+    events.forEach((event) => {
+      ctx.reply(`Topic: ${event.topic}\nDetail: ${event.detail}`);
+    });
+  } catch (error) {
+    console.log({ message: error.message });
+  }
+
+  ctx.reply(
+    "🤖 Please Enter The Topic of The Event You Want To Delete From The Above: "
+  );
+
+  ctx.session ??= { status: "deleteevent" };
+});
+
+bot.action("ViewReport", async (ctx) => {
+  ctx.reply("Official Members in CSEC_ASTU Are Listed Below:");
+  try {
+    const members = await Member.find();
+    members.forEach((member) => {
+      ctx.reply(
+        `name: ${member.name}\nemail: ${member.email}\nphone: ${member.phone}`
+      );
+    });
+  } catch (error) {
+    console.log({ message: error.message });
+  }
 });
 ////////////////////////////////////////////end of adminstrator role
 ////////////////////////////////////////////start of members role
 
-const startMember = (ctx)=>{
-    ctx.telegram.sendMessage(
-        ctx.chat.id,
-        '🤖 What You Want To Do?',
-    {
-        reply_markup: {  inline_keyboard:[
-                [{text:'⬆️ Update Profile',callback_data:'updateProfile'}],
-                [{text:'📊 View Events',callback_data:'viewEvent'}],
-                [{text:'🔳 Log Out',callback_data:'backToStart'}]              
-            ]
-        }   
-    })
-}
-bot.action('member',(ctx)=>{
-    ctx.deleteMessage();
-    startMember(ctx);
+bot.action("member", (ctx) => {
+  ctx.deleteMessage();
+  startMember(ctx);
 });
 
-
-bot.action('updateProfile',(ctx)=>{
-ctx.reply('the bot is updating your profile')
+bot.action("updateProfile", (ctx) => {
+  ctx.reply("the bot is updating your profile");
 });
-bot.action('viewEvent',async(ctx)=>{
-    ctx.reply('Available Events At CSEC_ASTU Are Listed Below:')
-    try {
-        const events = await Event.find();
-        events.forEach((event) => {
-          ctx.reply(`Topic:  ${event.topic}\nDetail:  ${event.detail}\n`)                      
-        });
-      } catch (error) {
-        console.log({ message: error.message });
-      }
+
+bot.action("viewEvent", async (ctx) => {
+  ctx.reply("🤖 Available Events At CSEC_ASTU Are Listed Below:");
+  try {
+    const events = await Event.find();
+    events.forEach((event) => {
+      ctx.reply(`Topic:  ${event.topic}\nDetail:  ${event.detail}\n`);
+    });
+  } catch (error) {
+    console.log({ message: error.message });
+  }
+  startMember(ctx);
 });
 ///////////////////////////////////////////////////end of members role
 
 bot.launch();
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
