@@ -1,5 +1,5 @@
-# https---github.com-eyualpha-ASTU_CSEC_BOT
-Telegram Club Management Bot
+CSEC ASTU CLUB MANAGEMENT BOT
+
 Welcome to the CSEC ASTU Club Management Bot repository! This bot is designed to simplify the management of your club on Telegram. the bot is developed using the Node.js (Telegraf) and MongoDB for efficient database management. It introduces two main user roles: administrators and members. Administrators have the authority to add or remove members and events, as well as access a report on the current club members. Members, on the other hand, can view the events posted by administrators.
 
 Features
@@ -14,7 +14,6 @@ Manage Events:
 
 Administrators can add new events to the club or delete existing ones.
 View Member Report:
-
 Obtain a quick overview of the current members in the club.
 Member Features:
 View Events:
@@ -22,32 +21,14 @@ Members can explore a list of events posted by administrators.
 Getting Started
 Clone the Repository:
 
-bash
+
 Copy code
-git clone https://github.com/your-username/telegram-club-management-bot.git
+(https://github.com/eyualpha/https---github.com-eyualpha-ASTU_CSEC_BOT.git)
 cd telegram-club-management-bot
-Install Dependencies:
-
-bash
-Copy code
-npm install
-Configuration:
-
-Obtain a Telegram Bot Token from BotFather.
-Replace 'YOUR_BOT_TOKEN' in the code with your actual bot token.
-Run the Bot:
-
-bash
-Copy code
-npm start
-How to Use
-Start the bot by sending the /start command.
+Install Dependencies: andStart the bot by sending the /start command.
 Log in as an administrator or a member using the provided options.
 Administrators can use commands like /administrator to access admin functionalities.
 Members can use commands like /member to explore member functionalities.
 Follow the interactive menus to perform desired actions.
-Contributing
-Your contributions are valuable! Feel free to open an issue or submit a pull request with any improvements, suggestions, or additional features you'd like to see.
 
-License
-This project is licensed under the MIT License.
+fro more info contact me at https://t.me/j_101_117coD
