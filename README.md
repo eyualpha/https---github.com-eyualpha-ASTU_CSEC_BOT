@@ -19,7 +19,7 @@ Member Features:
 View Events:
 Members can explore a list of events posted by administrators.
 Getting Started
-Clone the Repository:
+Clone the Repository
 
 
 Copy code
