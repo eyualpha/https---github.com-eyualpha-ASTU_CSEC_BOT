@@ -8,6 +8,8 @@ const startEventManager = (ctx) => {
       ],
     },
   });
+
+  ctx.session = null;
 };
 
 module.exports = startEventManager;

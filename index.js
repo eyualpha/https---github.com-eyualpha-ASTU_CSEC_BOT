@@ -4,16 +4,15 @@ const Member = require("./Schmas/memberSchma");
 const Event = require("./Schmas/eventSchma");
 const startBot = require("./User/start");
 const getSenderName = require("./User/getSenderName");
-const startAdminstrator = require("./Admin/startAdministrator");
 const startMemberManager = require("./Admin/startMemberManager");
 const startEventManager = require("./Admin/startEventManager");
 const adminBack = require("./Admin/adminBack");
-const addUser = require("./Admin/addUser");
 const startMember = require("./member/startMember");
 const addMember = require("./member/addMember");
 const deleteMember = require("./member/deleteMember");
 const addEvent = require("./member/addEvent");
 const deletEvent = require("./member/deleteEvent");
+const passwordCheker = require("./Admin/passwordChecker");
 
 require("dotenv").config();
 
@@ -45,7 +44,7 @@ bot.help(async (ctx) => {
 
 bot.action("backToStart", (ctx) => {
   ctx.deleteMessage();
-  adminBack(ctx);
+  startBot(ctx);
 });
 
 //////////////////////////////////////////start of adminstrator role
@@ -57,8 +56,9 @@ bot.action("managememeber", (ctx) => {
 });
 
 bot.action("administrator", (ctx) => {
-  ctx.deleteMessage();
-  startAdminstrator(ctx);
+  ctx.reply("🤖 please enter your password:");
+  //   ctx.session.status = "addmember";
+  ctx.session ??= { status: "password" };
 });
 
 bot.action("administratorApproved", (ctx) => {
@@ -77,17 +77,24 @@ bot.action("addMember", (ctx) => {
 });
 
 bot.on("text", (ctx) => {
-  console.log("heree .....");
   const session = ctx.session;
-  if (session && session.status === "addmember") {
-    addMember(ctx);
-    startAdminstrator(ctx);
-  } else if (session && session.status === "deletememeber") {
-    deleteMember(ctx);
-  } else if (session && session.status === "addevent") {
-    addEvent(ctx);
-  } else if (session && session.status === "deleteevent") {
+  if (!session) {
     deletEvent(ctx);
+    startEventManager(ctx);
+  } else if (session.status === "addmember") {
+    addMember(ctx);
+    startMemberManager(ctx);
+  } else if (session.status === "deletememeber") {
+    deleteMember(ctx);
+    startMemberManager(ctx);
+  } else if (session.status === "addevent") {
+    addEvent(ctx);
+    startEventManager(ctx);
+  } else if (session.status === "deleteevent") {
+    deletEvent(ctx);
+    startEventManager(ctx);
+  } else if (session.status === "password") {
+    passwordCheker(ctx);
   }
 });
 
@@ -96,8 +103,10 @@ bot.action("deleteMember", async (ctx) => {
   try {
     const members = await Member.find();
     members.forEach((member) => {
-      ctx.reply(
-        `name: ${member.name}\nemail: ${member.email}\nphone: ${member.phone}`
+      ctx.replyWithHTML(
+        `<b>Name:</b> <code>${member.name}</code>\n` +
+          `<b>Email:</b> ${member.email}\n` +
+          `<b>Phone:</b> ${member.phone}`
       );
     });
   } catch (error) {
@@ -123,11 +132,17 @@ bot.action("addEvent", async (ctx) => {
 });
 
 bot.action("deleteEvent", async (ctx) => {
-  ctx.reply("the bot is deleting events");
   try {
     const events = await Event.find();
     events.forEach((event) => {
-      ctx.reply(`Topic: ${event.topic}\nDetail: ${event.detail}`);
+      const topic = event.topic.split(" ");
+      if (topic.length > 1) {
+        ctx.replyWithHTML(
+          `Topic: <code>${event.topic}</code>\nDetail: ${event.detail}`
+        );
+      } else {
+        ctx.replyWithHTML(`Topic: /${event.topic}\nDetail: ${event.detail}`);
+      }
     });
   } catch (error) {
     console.log({ message: error.message });
@@ -137,7 +152,7 @@ bot.action("deleteEvent", async (ctx) => {
     "🤖 Please Enter The Topic of The Event You Want To Delete From The Above: "
   );
 
-  ctx.session ??= { status: "deletevent" };
+  ctx.session ??= { status: "deleteevent" };
 });
 
 bot.action("ViewReport", async (ctx) => {
@@ -145,8 +160,10 @@ bot.action("ViewReport", async (ctx) => {
   try {
     const members = await Member.find();
     members.forEach((member) => {
-      ctx.reply(
-        `name: ${member.name}\nemail: ${member.email}\nphone: ${member.phone}`
+      ctx.replyWithHTML(
+        `<b>Name:</b> ${member.name}\n` +
+          `<b>Email:</b> ${member.email}\n` +
+          `<b>Phone:</b> ${member.phone}`
       );
     });
   } catch (error) {
@@ -161,9 +178,9 @@ bot.action("member", (ctx) => {
   startMember(ctx);
 });
 
-bot.action("updateProfile", (ctx) => {
-  ctx.reply("the bot is updating your profile");
-});
+// bot.action("updateProfile", (ctx) => {
+//   ctx.reply("the bot is updating your profile");
+// });
 
 bot.action("viewEvent", async (ctx) => {
   ctx.reply("🤖 Available Events At CSEC_ASTU Are Listed Below:");

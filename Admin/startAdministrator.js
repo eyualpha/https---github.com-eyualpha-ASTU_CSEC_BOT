@@ -1,6 +1,4 @@
 const startAdminstrator = (ctx) => {
-  
-  
   ctx.telegram.sendMessage(ctx.chat.id, "🤖 What You Want To Do?", {
     reply_markup: {
       inline_keyboard: [
@@ -11,6 +9,8 @@ const startAdminstrator = (ctx) => {
       ],
     },
   });
+
+  ctx.session = null;
 };
 
 module.exports = startAdminstrator;

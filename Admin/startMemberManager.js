@@ -8,6 +8,7 @@ const startMemberManager = (ctx) => {
       ],
     },
   });
+  ctx.session = null;
 };
 
 module.exports = startMemberManager;
